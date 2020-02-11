@@ -1,4 +1,7 @@
 #include "ARDepth.h"
+#include <iostream>
+#include <string>
+
 
 cv::Mat ARDepth::GetFlow(const cv::Mat& image1, const cv::Mat& image2){
     cv::Mat flow, image1_, image2_;
@@ -384,12 +387,12 @@ cv::Mat ARDepth::TemporalMedian(const std::deque<cv::Mat>& depth_maps){
 }
 
 void ARDepth::visualizeImg(const cv::Mat& raw_img, const cv::Mat& raw_depth, const cv::Mat& filtered_depth){
-    const int width_visualize = 360;
-    const int height_visualize = 640;
+    const int width_visualize = 640;
+    const int height_visualize = 480;
 
     //Color image
     cv::Mat color_visual;
-    cv::resize(raw_img, color_visual, cv::Size(360, 640), 0, 0, cv::INTER_AREA);
+    cv::resize(raw_img, color_visual, cv::Size(width_visualize, height_visualize), 0, 0, cv::INTER_AREA);
 
     //Sparse depth map
     cv::Mat raw_depth_visual = cv::Mat::zeros(raw_depth.size(), raw_depth.depth());
@@ -421,6 +424,9 @@ void ARDepth::run() {
 
     std::deque<cv::Mat> last_depths;
     cv::Mat last_depth;
+    
+    std::string frame_name="output/frame_depth";
+    std::string number,filename;
 
     std::cout<<"Using the first "<<skip_frames<<" frames to initialize (these won't be saved)."<<std::endl;
     int count = 0;
@@ -460,7 +466,22 @@ void ARDepth::run() {
 
         cv::Mat filtered_depth = TemporalMedian(last_depths);
         last_depth = depth;
-
+        
+        if(save){
+            if(frame<10){
+                filename=frame_name+"_00"+std::to_string(frame)+".txt";
+            }else{
+                if(frame<100){
+                    filename=frame_name+"_0"+std::to_string(frame)+".txt";
+                }else{
+                    filename=frame_name+"_"+std::to_string(frame)+".txt";
+                }
+            }
+            cv::FileStorage file(filename, cv::FileStorage::WRITE);
+            file << "matName" <<last_depth;
+            file.release();
+            //std::cout<<last_depth<<std::endl;
+        }
         if(visualize) {
             cv::Mat raw_img = recon.GetImage(frame, false);
             cv::Mat raw_depth = recon.GetSparseDepthMap(last_keyframe, false);

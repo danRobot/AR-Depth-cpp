@@ -12,10 +12,11 @@
 
 class ARDepth{
 public:
-    ARDepth(const std::string& input_frames, const std::string& input_colmap, const bool& resize, const bool& visualize)
+    ARDepth(const std::string& input_frames, const std::string& input_colmap, const bool& resize, const bool& visualize,const bool& save)
             :input_frames(input_frames),
              input_colmap(input_colmap),
              resize(resize),
+             save(save),
              visualize(visualize) {};
 
     ~ARDepth() = default;
@@ -24,6 +25,7 @@ public:
     const std::string input_colmap;
     const bool resize;
     const bool visualize;
+    const bool save;
     const double tau_high = 0.2;
     const double tau_low = 0.2;
     const double tau_flow = 0;
@@ -34,7 +36,7 @@ public:
     const double lambda_t = 0.01;
     const double lambda_s = 1;
     const int num_solver_iterations = 400;
-    const cv::Ptr<cv::DenseOpticalFlow> dis = cv::optflow::createOptFlow_DIS(2);
+    const cv::Ptr<cv::DenseOpticalFlow> dis = cv::optflow::createOptFlow_DualTVL1();
 
     cv::Mat GetFlow(const cv::Mat& image1, const cv::Mat& image2);
 
